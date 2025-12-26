@@ -1,3 +1,5 @@
+package sentimentanalysis;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -61,13 +63,13 @@ public class API {
         // Enable sending body
         conn.setDoOutput(true);
 
-        // Write request body
+        
         try (OutputStream os = conn.getOutputStream()) {
             byte[] input = jsonBody.getBytes("utf-8");
             os.write(input, 0, input.length);
         }
 
-        // Check for success
+        
         int responseCode = conn.getResponseCode();
         if (responseCode != 200 && responseCode != 201) {
             throw new RuntimeException("POST failed. HTTP error code: " + responseCode);
@@ -93,16 +95,16 @@ public class API {
         Map<String, String> env = EnvLoader.loadEnv(".env");
 
         try {
-            // --- Example GET request: Fetch latest weather forecast for Kuala Lumpur ---
+            
             String getUrl = "https://api.data.gov.my/weather/forecast/?contains=WP%20Kuala%20Lumpur@location__location_name&sort=date&limit=1";
             String getResponse = api.get(getUrl);
             System.out.println("GET Response:\n" + getResponse);
 
-            // --- Example POST request: Perform sentiment analysis using HuggingFace model ---
+
             String journalInput = "I spent my free time with my friends today. We had a great time at the park and enjoyed the sunny weather.";
             String postUrl = "https://router.huggingface.co/hf-inference/models/distilbert/distilbert-base-uncased-finetuned-sst-2-english";
 
-            // Safely get bearer token
+            
             String bearerToken = env.get("BEARER_TOKEN");
             if (bearerToken == null || bearerToken.isEmpty()) {
                 System.err.println("Error: BEARER_TOKEN is not set in the environment.");
@@ -112,7 +114,7 @@ public class API {
             // Format JSON body
             String jsonBody = "{\"inputs\": \"" + journalInput + "\"}";
 
-            // Call POST
+           
             String postResponse = api.post(postUrl, bearerToken, jsonBody);
             System.out.println("\nSentiment Analysis Response:\n" + postResponse);
 
