@@ -1,4 +1,4 @@
-package sentimentanalysis;
+
 
 import java.util.Map;
 
@@ -51,4 +51,5 @@ public class SentimentAnalysis {
 
         return "NEUTRAL"; // Fallback if API is busy or fails
     }
+
 }
