@@ -46,13 +46,16 @@ public class Login {
         String email = sc.nextLine();
 
         System.out.print("Password: ");
-        String password = sc.nextLine();
+        String rawPassword = sc.nextLine();
+
+        // ENCRYPT the password using PasswordSecurity class
+        String encryptedPassword = PasswordSecurity.encrypt(rawPassword);
 
         System.out.print("Display Name: ");
         String displayName = sc.nextLine();
 
         // Create User object (THIS is combining)
-        User user = new User(email, password, displayName);
+        User user = new User(email, encryptedPassword, displayName);
         users.add(user);
 
         System.out.println("Registered successfully!");
@@ -67,21 +70,30 @@ static void login() {
     String email = sc.nextLine();
 
     System.out.print("Password: ");
-    String password = sc.nextLine();
+    String rawPassword = sc.nextLine();
 
+//encrypt the input to match the stored encrypted password
+    String encryptedInput = PasswordSecurity.encrypt(rawPassword);
+
+    boolean found = false;
     for (User u : users) {
-        if (u.email.equals(email) && u.password.equals(password)) {
+        // 2. Compare the encrypted input with the stored encrypted password
+        if (u.email.equals(email) && u.password.equals(encryptedInput)) {
             System.out.println("Welcome " + u.displayName);
-            System.exit(0);
+            found = true;
+            
+            // 3. Instead of exiting, go to the journal menu
+            journalpage jp = new journalpage();
+            jp.displayJournalMenu();
+            return; 
         }
+    }
     
-       
-              
-       
-       System.out.println("Login failed");}
+    // 4. Print this ONLY if the loop finishes without finding a match
+    if (!found) {
+        System.out.println("Login failed");
+    }
 }
-}
-
 
     
 
@@ -91,5 +103,6 @@ static void login() {
     
 
     
+
 
 
