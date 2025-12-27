@@ -1,5 +1,3 @@
-package passwordsecurity;
-
 
 public class PasswordSecurity {
 
@@ -30,4 +28,5 @@ public class PasswordSecurity {
         return decrypted.toString();
     }
     
+
 }
