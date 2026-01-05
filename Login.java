@@ -2,6 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
+package assignment;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -15,6 +16,8 @@ public class Login {
     static Scanner sc = new Scanner(System.in);
     
     public static void main(String[] args) {
+        loadUsersFromFile(); // LOAD users first
+
 
     while (true) {
         System.out.println("\n1. Register");
@@ -42,20 +45,22 @@ public class Login {
 }
 
     static void register() {
+        // ❌ If users already exist, block register
+    if (!users.isEmpty()) {
+        System.out.println("Users already exist. Please login.");
+        return;
+    }
         System.out.print("Email: ");
         String email = sc.nextLine();
 
         System.out.print("Password: ");
-        String rawPassword = sc.nextLine();
-
-        // ENCRYPT the password using PasswordSecurity class
-        String encryptedPassword = PasswordSecurity.encrypt(rawPassword);
+        String password = sc.nextLine();
 
         System.out.print("Display Name: ");
         String displayName = sc.nextLine();
 
         // Create User object (THIS is combining)
-        User user = new User(email, encryptedPassword, displayName);
+        User user = new User(email, password, displayName);
         users.add(user);
 
         System.out.println("Registered successfully!");
@@ -70,43 +75,49 @@ static void login() {
     String email = sc.nextLine();
 
     System.out.print("Password: ");
-    String rawPassword = sc.nextLine();
+    String password = sc.nextLine();
 
-//encrypt the input to match the stored encrypted password
-    String encryptedInput = PasswordSecurity.encrypt(rawPassword);
-
-    boolean found = false;
     for (User u : users) {
-        // 2. Compare the encrypted input with the stored encrypted password
-        if (u.email.equals(email) && u.password.equals(encryptedInput)) {
+        if (u.email.equals(email) && u.password.equals(password)) {
             System.out.println("Welcome " + u.displayName);
-            found = true;
-            
-            // 3. Instead of exiting, go to the journal menu
-            journalpage jp = new journalpage();
-            jp.displayJournalMenu();
-            return; 
+            System.exit(0);
         }
-    }
     
-    // 4. Print this ONLY if the loop finishes without finding a match
-    if (!found) {
-        System.out.println("Login failed");
+       
+              
+       
+      }
+    
+}static void loadUsersFromFile() {
+    users.clear();
+
+    try (Scanner fileScanner = new Scanner(new java.io.File("UserData.txt"))) {
+        while (fileScanner.hasNextLine()) {
+
+            String email = fileScanner.nextLine();
+            if (email.isEmpty()) continue;
+
+            String displayName = fileScanner.nextLine();
+            String password = fileScanner.nextLine();
+
+            User u = new User(email, password, displayName);
+            users.add(u);
+        }
+    } catch (Exception e) {
+        System.out.println("UserData.txt not found");
     }
 }
 
-
-
-
 }
-    
-
-
 
 
     
 
+
+
+
     
+
 
 
 
