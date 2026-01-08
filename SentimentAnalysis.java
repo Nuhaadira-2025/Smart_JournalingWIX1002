@@ -1,4 +1,4 @@
-
+package smartjournaling;
 
 import java.util.Map;
 
