@@ -1,7 +1,7 @@
 s100201@student.fop
-sz-Vwxg#4
-Foo Bar
+Foo bar
+pw-Stud#1
 s100202@student.fop
-sz-Vwxg#5
 John Doe
+pw-Stud#2
 
