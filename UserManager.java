@@ -25,7 +25,7 @@ public class UserManager {
             while ((email = br.readLine()) != null) {
                 if (email.trim().isEmpty()) continue; 
                 
-                // Read the next two lines (Name and Password)
+                
                 String lineA = br.readLine();
                 String lineB = br.readLine();
                 
@@ -35,7 +35,7 @@ public class UserManager {
                 String password;
 
                 
-                // If the first line looks like a password (starts with "pw-" or "sz-"), swap them
+                
                 if (lineA.startsWith("pw-") || lineA.startsWith("sz-")) {
                     password = lineA;
                     displayName = lineB;
@@ -85,9 +85,10 @@ public class UserManager {
         } catch (IOException e) {
             System.out.println("Error saving user.");
         }
+        
     }
 
-    //Caesar Cipher Logic
+    //Caesar Cipher 
     private String encryptPassword(String password) {
         StringBuilder encrypted = new StringBuilder();
         for (char c : password.toCharArray()) {
@@ -106,4 +107,6 @@ public class UserManager {
         }
         return false;
     }
+    
 }
+
