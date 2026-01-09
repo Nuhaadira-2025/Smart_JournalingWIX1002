@@ -7,13 +7,22 @@
  *
  * @author User
  */
+package smartjournaling;
+
 public class WeatherAPI {
     public static String getWeather() {
-        // Simulated API response
-        return "{"
-                + "\"summary_forecast\":\"Ribut petir di beberapa tempat\","
-                + "\"min_temp\":23,"
-                + "\"max_temp\":34"
-                + "}";
+        API api = new API();
+        
+        
+        String url = "https://api.data.gov.my/weather/forecast/?contains=WP%20Kuala%20Lumpur@location__location_name&sort=date&limit=1";
+        
+        try {
+            return api.get(url);
+        } catch (Exception e) {
+            System.out.println("Weather Error: " + e.getMessage());
+            
+            return "{\"summary_forecast\":\"Unavailable\"}";
+        }
     }
 }
+
