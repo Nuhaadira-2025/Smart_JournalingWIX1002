@@ -1,55 +1,47 @@
 package smartjournaling;
 
-import java.util.Map;
-
 public class SentimentAnalysis {
 
-    /**
-     * method that will call from the Journal Page.
-     * It takes the journal text and returns "POSITIVE" or "NEGATIVE".
-     */
-    public static String getMood(String journalInput) {
+    public static String getMood(String text) {
         API api = new API();
         
-        // 1. Load the token from the .env file
-        Map<String, String> env = EnvLoader.loadEnv(".env");
-        String bearerToken = env.get("BEARER_TOKEN");
-
-        // Safety check: Ensure token exists [cite: 221]
-        if (bearerToken == null || bearerToken.isEmpty()) {
-            System.err.println("Error: BEARER_TOKEN is not set in the .env file.");
-            return "UNKNOWN"; 
-        }
-
-        // 2. Set the Hugging Face Model URL 
-        String postURL = "https://router.huggingface.co/hf-inference/models/distilbert/distilbert-base-uncased-finetuned-sst-2-english";
         
-        // 3. Prepare the input for the AI [cite: 302]
-        String jsonBody = "{\"inputs\":\"" + journalInput + "\"}";
+        String token = EnvLoader.loadEnv(".env").get("BEARER_TOKEN");
+        
+        
+        String url = "https://router.huggingface.co/hf-inference/models/tabularisai/multilingual-sentiment-analysis";
+        
+        
+        String safeText = text.replace("\"", "\\\""); 
+        String jsonBody = "{\"inputs\": \"" + safeText + "\"}";
 
         try {
-            // 4. Send the request and get the response 
-            String apiResponse = api.post(postURL, bearerToken, jsonBody);
+            String response = api.post(url, token, jsonBody);
+  
 
-            // 5. Extraction Logic: Grab the label with the highest score 
-            String labelMarker = "\"label\":\"";
-            int firstLabelIndex = apiResponse.indexOf(labelMarker);
+            
+            int labelIndex = response.indexOf("\"label\"");
+            
+            if (labelIndex != -1) {
+                String firstLabel = response.substring(labelIndex, Math.min(response.length(), labelIndex + 30));
 
-            if (firstLabelIndex != -1) {
-                // Get the text immediately after "label":"
-                String moodSubstring = apiResponse.substring(firstLabelIndex + labelMarker.length());
-
-                if (moodSubstring.startsWith("POSITIVE")) {
+                
+                if (firstLabel.contains("Very Positive") || firstLabel.contains("Positive")) {
                     return "POSITIVE";
-                } else if (moodSubstring.startsWith("NEGATIVE")) {
+                } 
+                else if (firstLabel.contains("Very Negative") || firstLabel.contains("Negative")) {
                     return "NEGATIVE";
+                } 
+                else if (firstLabel.contains("Neutral")) {
+                    return "NEUTRAL";
                 }
             }
+            
+            return "NEUTRAL"; 
+            
         } catch (Exception e) {
-            System.err.println("Error calling Sentiment API: " + e.getMessage());
+            System.out.println("AI Error: " + e.getMessage());
+            return "NEUTRAL";
         }
-
-        return "NEUTRAL"; // Fallback if API is busy or fails
     }
-
 }
