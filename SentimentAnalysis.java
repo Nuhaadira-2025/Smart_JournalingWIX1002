@@ -4,40 +4,33 @@ public class SentimentAnalysis {
 
     public static String getMood(String text) {
         API api = new API();
-        
-        
         String token = EnvLoader.loadEnv(".env").get("BEARER_TOKEN");
         
         
         String url = "https://router.huggingface.co/hf-inference/models/tabularisai/multilingual-sentiment-analysis";
-        
         
         String safeText = text.replace("\"", "\\\""); 
         String jsonBody = "{\"inputs\": \"" + safeText + "\"}";
 
         try {
             String response = api.post(url, token, jsonBody);
-  
-
-            
             int labelIndex = response.indexOf("\"label\"");
             
             if (labelIndex != -1) {
-                String firstLabel = response.substring(labelIndex, Math.min(response.length(), labelIndex + 30));
+                String chunk = response.substring(labelIndex, Math.min(response.length(), labelIndex + 30));
 
-                
-                if (firstLabel.contains("Very Positive") || firstLabel.contains("Positive")) {
+                if (chunk.contains("Positive")) {
                     return "POSITIVE";
                 } 
-                else if (firstLabel.contains("Very Negative") || firstLabel.contains("Negative")) {
+                else if (chunk.contains("Negative")) {
                     return "NEGATIVE";
                 } 
-                else if (firstLabel.contains("Neutral")) {
+                else if (chunk.contains("Neutral")) {
                     return "NEUTRAL";
                 }
             }
             
-            return "NEUTRAL"; 
+            return "NEUTRAL";
             
         } catch (Exception e) {
             System.out.println("AI Error: " + e.getMessage());
