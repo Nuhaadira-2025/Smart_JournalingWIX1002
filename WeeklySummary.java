@@ -14,7 +14,7 @@ public class WeeklySummary {
         System.out.println("\n=== Weekly Mood & Weather Summary (Past 7 Days) ===");
         
         if (entries.isEmpty()) {
-            System.out.println("No journal entries found.");
+            System.out.println("No journal entries found for this user.");
             return;
         }
 
@@ -26,14 +26,13 @@ public class WeeklySummary {
             }
         });
 
-        
         int positiveCount = 0;
         int negativeCount = 0;
         int neutralCount = 0;
         int rainyCount = 0;
-        int sunnyCount = 0;
+        int sunnyCount = 0; 
 
-        int daysToShow = Math.min(entries.size(), 7); // Show max 7 days
+        int daysToShow = Math.min(entries.size(), 7); // Show max 7 entries
 
         System.out.println("----------------------------------------------------------------");
         System.out.printf("%-12s | %-10s | %-35s\n", "Date", "Mood", "Weather");
@@ -42,24 +41,35 @@ public class WeeklySummary {
         for (int i = 0; i < daysToShow; i++) {
             JournalEntry entry = entries.get(i);
             
-            
             String weather = entry.getWeather();
-            if (weather.length() > 30) weather = weather.substring(0, 32) + "...";
-            System.out.printf("%-12s | %-10s | %-35s\n", entry.getDate(), entry.getMood(), weather);
-
+            String displayWeather = weather;
             
+            // Truncate long weather strings for display
+            if (displayWeather.length() > 30) displayWeather = displayWeather.substring(0, 32) + "...";
+            
+            System.out.printf("%-12s | %-10s | %-35s\n", entry.getDate(), entry.getMood(), displayWeather);
+
+            // --- COUNT MOODS ---
             if (entry.getMood().contains("POSITIVE")) positiveCount++;
             else if (entry.getMood().contains("NEGATIVE")) negativeCount++;
             else neutralCount++;
 
-            
-            String w = weather.toLowerCase();
-            if (w.contains("hujan") || w.contains("rain") || w.contains("ribut")) rainyCount++;
-            else sunnyCount++; 
+            String w = weather.toLowerCase().trim();
+
+            if (w.contains("no rain") || w.contains("tiada") || w.contains("none")) {
+                sunnyCount++;
+            } 
+
+            else if (w.contains("hujan") || w.contains("rain") || w.contains("ribut") || w.contains("storm")) {
+                rainyCount++;
+            } 
+
+            else {
+                sunnyCount++;
+            }
         }
         System.out.println("----------------------------------------------------------------");
 
-        
         System.out.println("\n--- Weekly Overview ---");
         System.out.println("Moods:   " + positiveCount + " Positive, " + negativeCount + " Negative, " + neutralCount + " Neutral");
         System.out.println("Weather: " + rainyCount + " Rainy/Stormy days, " + sunnyCount + " Other days");
