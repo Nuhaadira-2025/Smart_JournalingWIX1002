@@ -9,10 +9,10 @@ public class WeatherAPI {
         String url = "https://api.data.gov.my/weather/forecast/?contains=WP%20Kuala%20Lumpur@location__location_name&sort=date&limit=1";
         
         try {
-            // Get the Raw Data
+            //Get the Raw Data
             String jsonResponse = api.get(url);
 
-            // Decide based on time (Morning / Afternoon / Night)
+            //Decide based on time (Morning / Afternoon / Night)
             int currentHour = LocalTime.now().getHour();
             String targetField;
             
@@ -32,15 +32,6 @@ public class WeatherAPI {
                 System.out.println(">>> Time specific failed, switching to Summary...");
                 result = extractValue(jsonResponse, "summary_forecast");
             }
-
-            
-            result = result.trim();
-           
-            if (result.toLowerCase().contains("no rain")) {
-                result = "Sunny";
-            }
-            
-
             return result;
 
         } catch (Exception e) {
@@ -52,7 +43,7 @@ public class WeatherAPI {
     
     private static String extractValue(String json, String key) {
         try {
-            
+           
             int keyIndex = json.indexOf("\"" + key + "\"");
             if (keyIndex == -1) return "Unknown";
 
