@@ -1,87 +1,141 @@
+package smartjournaling;
+
 import java.time.LocalDate;
-import java.util.Scanner;
-import java.util.ArrayList;
 import java.util.List;
-public class journalpage {
+import java.util.Scanner;
 
+public class journalPage {
     private Scanner scanner = new Scanner(System.in);
-    
-    
-    private List<String> journalDates = new ArrayList<>(); 
-    private String todayEntry = ""; 
+    private User currentUser;
+    private journalStorage storage; 
 
-    public void displayJournalMenu() {
-        LocalDate today = LocalDate.now();
-        
+    public journalPage(User user) {
+        this.currentUser = user;
+        this.storage = new journalStorage();
+    }
+
+    public void start() {
         while (true) {
-            System.out.println("\n=== Journal Dates ===");
+            LocalDate today = LocalDate.now();
+            List<JournalEntry> history = storage.getUserEntries(currentUser.getEmail());
+
+            System.out.println("\n=== Journal Menu ===");
             
-            System.out.println("1. 2025-10-08");
-            System.out.println("2. 2025-10-09");
-            System.out.println("3. 2025-10-10");
-            System.out.println("4. " + today + " (Today)");
+            // weekly summary
+            System.out.println("1. View Weekly Summary"); 
+            
+            System.out.println("--- Journal Dates ---");
             
             
-            if (todayEntry.isEmpty()) {
-                System.out.print("Select a date to view journal, or create a new journal for today: \n> ");
-            } else {
-                System.out.print("Select a date to view journal, or edit the journal for today: \n> ");
+            int optionCounter = 2;
+            
+            // List past dates
+            for (JournalEntry entry : history) {
+                if (!entry.getDate().equals(today.toString())) {
+                    System.out.println(optionCounter + ". " + entry.getDate());
+                    optionCounter++;
+                }
             }
 
-            String choice = scanner.nextLine();
+            // Options for Today and Logout
+            int todayOption = optionCounter;
+            System.out.println(todayOption + ". " + today + " (Today)");
+            
+            int logoutOption = todayOption + 1;
+            System.out.println(logoutOption + ". Logout"); 
 
-            if (choice.equals("4")) {
-                handleToday(today);
-            } else if (choice.equals("1") || choice.equals("2") || choice.equals("3")) {
-                viewPastEntry(choice);
-            } else {
-                break; 
+            System.out.print("Select option: \n> ");
+            String input = scanner.nextLine();
+
+            try {
+                int choice = Integer.parseInt(input);
+
+                
+                if (choice == 1) {
+                    new WeeklySummary().show(currentUser);
+                } 
+                else if (choice == todayOption) {
+                    handleToday(today);
+                } 
+                else if (choice == logoutOption) {
+                    break;
+                } 
+                
+                else if (choice > 1 && choice < todayOption) {
+                    
+                    JournalEntry selectedEntry = history.get(choice - 2);
+                    viewEntry(selectedEntry);
+                } else {
+                    System.out.println("Invalid option.");
+                }
+            } catch (Exception e) {
+                System.out.println("Please enter a valid number.");
             }
         }
     }
 
+   
     private void handleToday(LocalDate date) {
-        if (todayEntry.isEmpty()) {
-            
+        JournalEntry existing = storage.getEntry(currentUser.getEmail(), date.toString());
+
+        if (existing == null) {
             System.out.println("Enter your journal entry for " + date + ":");
             System.out.print("> ");
-            todayEntry = scanner.nextLine();
+            String text = scanner.nextLine();
             
+            System.out.println("Processing...");
+            String mood = SentimentAnalysis.getMood(text);
+            String rawJson = WeatherAPI.getWeather();
+            String weather = extractWeather(rawJson);
+
+            JournalEntry entry = new JournalEntry(currentUser.getEmail(), date.toString(), text, mood, weather);
+            storage.saveEntry(entry);
+
+            System.out.println("Saved! Mood: " + mood + " | Weather: " + weather);
+
+        } else {
+            System.out.println("\nEntry exists for today.");
+            System.out.println("1. View Journal");
+            System.out.println("2. Edit Journal");
+            System.out.print("> ");
+            String subChoice = scanner.nextLine();
             
-            System.out.println("Journal saved successfully!");
-        } 
-        
-        
-        System.out.println("\nWould you like to:");
-        System.out.println("1. View Journal");
-        System.out.println("2. Edit Journal");
-        System.out.println("3. Back to Dates");
-        System.out.print("> ");
-        
-        String action = scanner.nextLine();
-        switch (action) {
-            case "1":
-                System.out.println("=== Journal Entry for " + date + " ===");
-                System.out.println(todayEntry);
-                System.out.println("Press Enter to go back.");
-                scanner.nextLine();
-                break;
-            case "2":
-                System.out.println("Edit your journal entry for " + date + ":");
+            if (subChoice.equals("1")) {
+                viewEntry(existing);
+            } else if (subChoice.equals("2")) {
+                System.out.println("Current Text: " + existing.getContent());
+                System.out.println("Enter NEW text:");
                 System.out.print("> ");
-                todayEntry = scanner.nextLine(); 
-                break;
-            default:
-                break;
+                String newText = scanner.nextLine();
+
+                System.out.println("Re-analyzing mood...");
+                String newMood = SentimentAnalysis.getMood(newText);
+                String oldWeather = existing.getWeather();
+
+                JournalEntry updated = new JournalEntry(currentUser.getEmail(), date.toString(), newText, newMood, oldWeather);
+                storage.updateEntry(updated); 
+                
+                System.out.println("Entry Updated! New Mood: " + newMood);
+            }
         }
     }
 
-    private void viewPastEntry(String choice) {
-        
-        System.out.println("=== Journal Entry for Past Date ===");
-        System.out.println("I had a great day at the park with my friends.");
+    private void viewEntry(JournalEntry entry) {
+        System.out.println("\n=== Journal Entry for " + entry.getDate() + " ===");
+        System.out.println("Content: " + entry.getContent());
+        System.out.println("Mood:    " + entry.getMood());
+        System.out.println("Weather: " + entry.getWeather());
+        System.out.println("---------------------------------");
         System.out.println("Press Enter to go back.");
         scanner.nextLine();
     }
+
+    private String extractWeather(String json) {
+        String key = "\"summary_forecast\":\"";
+        int start = json.indexOf(key);
+        if (start == -1) return "Unknown";
+        start += key.length();
+        int end = json.indexOf("\"", start);
+        return (end == -1) ? "Unknown" : json.substring(start, end);
+    }
 }
-    
