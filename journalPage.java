@@ -26,7 +26,6 @@ public class journalPage {
             
             System.out.println("--- Journal Dates ---");
             
-            
             int optionCounter = 2;
             
             // List past dates
@@ -50,7 +49,6 @@ public class journalPage {
             try {
                 int choice = Integer.parseInt(input);
 
-                
                 if (choice == 1) {
                     new WeeklySummary().show(currentUser);
                 } 
@@ -60,9 +58,7 @@ public class journalPage {
                 else if (choice == logoutOption) {
                     break;
                 } 
-                
                 else if (choice > 1 && choice < todayOption) {
-                    
                     JournalEntry selectedEntry = history.get(choice - 2);
                     viewEntry(selectedEntry);
                 } else {
@@ -74,7 +70,7 @@ public class journalPage {
         }
     }
 
-   
+    
     private void handleToday(LocalDate date) {
         JournalEntry existing = storage.getEntry(currentUser.getEmail(), date.toString());
 
@@ -84,10 +80,11 @@ public class journalPage {
             String text = scanner.nextLine();
             
             System.out.println("Processing...");
+            
+            
             String mood = SentimentAnalysis.getMood(text);
-            String rawJson = WeatherAPI.getWeather();
-            String weather = extractWeather(rawJson);
-
+            
+            String weather = WeatherAPI.getWeather();
             JournalEntry entry = new JournalEntry(currentUser.getEmail(), date.toString(), text, mood, weather);
             storage.saveEntry(entry);
 
@@ -122,20 +119,11 @@ public class journalPage {
 
     private void viewEntry(JournalEntry entry) {
         System.out.println("\n=== Journal Entry for " + entry.getDate() + " ===");
-        System.out.println("Content: " + entry.getContent());
+        System.out.println("Entry: " + entry.getContent());
         System.out.println("Mood:    " + entry.getMood());
         System.out.println("Weather: " + entry.getWeather());
         System.out.println("---------------------------------");
         System.out.println("Press Enter to go back.");
         scanner.nextLine();
-    }
-
-    private String extractWeather(String json) {
-        String key = "\"summary_forecast\":\"";
-        int start = json.indexOf(key);
-        if (start == -1) return "Unknown";
-        start += key.length();
-        int end = json.indexOf("\"", start);
-        return (end == -1) ? "Unknown" : json.substring(start, end);
     }
 }
