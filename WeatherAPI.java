@@ -1,13 +1,36 @@
-package smartjournaling;
+package smartJournaling;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.time.LocalTime;
 
 public class WeatherAPI {
+
+    private static String translateToEnglish(String malayText) {
+    if (malayText == null) return "Unavailable";
+
+    malayText = malayText.toLowerCase();
+
+    if (malayText.contains("ribut")) return "Thunderstorms";
+    if (malayText.contains("hujan lebat")) return "Heavy rain";
+    if (malayText.contains("hujan ringan")) return "Light rain";
+    if (malayText.contains("hujan")) return "Rain";
+    if (malayText.contains("berawan")) return "Cloudy";
+    if (malayText.contains("cerah")) return "Sunny";
+    if (malayText.contains("kabut")) return "Foggy";
+    if (malayText.contains("angin")) return "Strong wind";
+    if (malayText.contains("panas")) return "Hot";
+    if (malayText.contains("sejuk")) return "Cool";
+
+    return malayText; // fallback if no keyword matched
+}
+
 
     public static String getWeather() {
         API api = new API();
         String url = "https://api.data.gov.my/weather/forecast/?contains=WP%20Kuala%20Lumpur@location__location_name&sort=date&limit=1";
         
+
         try {
             //Get the Raw Data
             String jsonResponse = api.get(url);
@@ -15,7 +38,7 @@ public class WeatherAPI {
             //Decide based on time (Morning / Afternoon / Night)
             int currentHour = LocalTime.now().getHour();
             String targetField;
-            
+
             if (currentHour < 12) {
                 targetField = "morning_forecast";
             } else if (currentHour < 18) {
@@ -24,19 +47,18 @@ public class WeatherAPI {
                 targetField = "night_forecast";
             }
 
-            
-            String result = extractValue(jsonResponse, targetField);
-            
-            
+
+            String result = translateToEnglish(extractValue(jsonResponse, targetField)); // ← LINE 28 (updated)
+
             if (result.equals("Unknown")) {
                 System.out.println(">>> Time specific failed, switching to Summary...");
-                result = extractValue(jsonResponse, "summary_forecast");
+                result = translateToEnglish(extractValue(jsonResponse, "summary_forecast")); // ← LINE 33 (updated)
             }
             return result;
 
         } catch (Exception e) {
             System.out.println("Weather Error: " + e.getMessage());
-            return "Unavailable"; 
+            return "Unavailable";
         }
     }
 
